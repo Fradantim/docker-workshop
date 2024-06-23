@@ -28,6 +28,7 @@
   - [Diagrama](#diagrama)
   - [Apagar containers y borrar red](#apagar-containers-y-borrar-red)
   - [docker-compose](#docker-compose)
+- [TODO COPY, ADD, EXEC](#todo-copy-add-exec)
 
 
 ---
@@ -48,18 +49,17 @@ hello-world     latest    d2c94e258dcb   13 months ago   13.3kB
 ```
 
 # Creacion de imagen docker a partir de un compilado
-**1** Preparo la app compilada
-```cmd
-TODO instrucciones descarga jar
-```
-**2** Preparo un archivo `Dockerfile-from-compilated-src`
+Preparo un archivo `Dockerfile-from-compilated-src`
 ```Dockerfile
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jre-jammy
-# copiar de mi equipo los *.jar (hay uno solo) y dejarlo en el directorio de trabajo de la imagen con el nombre app.jar
-COPY *.jar app.jar
+# descargo el jar de la aplicacion
+RUN wget https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.jar
+# o si ya tengo el .jar en mi PC puedo:
+# COPY graphql-2-jpa-8.jar .
+RUN mv graphql-2-jpa-8.jar graphql-2-jpa.jar
 # cuando inicie el container de esta imagen lanzar el siguiente comando
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","graphql-2-jpa.jar"]
 ```
 
 ```cmd
@@ -78,24 +78,18 @@ docker build -f Dockerfile-from-compilated-src -t graphql-2-jpa:from-compilated-
 ```
 
 # Creacion de imagen docker a partir de código fuente
-**1** preparo el codigo fuente
-**1.a** si poseo git
-```cmd
-git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
-```
-**1.b** si no poseo (mal ahi)
-```cmd
-curl https://github.com/Fradantim/spring-graphql-2-jpa/archive/refs/heads/main.zip
-TODO instrucciones tar para extraer
-```
-
-**2** Preparo un archivo `Dockerfile-from-src`
+Preparo un archivo `Dockerfile-from-src`
 ```Dockerfile
 # imagen constructora
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jdk-jammy AS builder
-# copiar el contenido de la carpeta con el código fuente a la imagen
-COPY spring-graphql-2-jpa .
+# descargar el codigo fuente
+RUN apt update && apt install git -y
+RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git --branch=8
+RUN mv spring-graphql-2-jpa/* spring-graphql-2-jpa/.[!.]* .
+# o si ya tengo el src en mi PC puedo:
+# COPY graphql-2-jpa-8 .
+# compilarlo
 RUN sh mvnw clean package -DskipTests
 
 # imagen final
@@ -156,7 +150,7 @@ FROM graphql-2-jpa:from-src
 # descargo driver postgresql
 RUN wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar
 # cuando inicie el container de esta imagen lanzar el siguiente comando
-ENTRYPOINT ["java","-cp","app.jar:postgresql-42.7.3.jar", "org.springframework.boot.loader.launch.PropertiesLauncher"]
+ENTRYPOINT ["java","-cp","graphql-2-jpa.jar:postgresql-42.7.3.jar", "org.springframework.boot.loader.launch.PropertiesLauncher"]
 ```
 
 ```cmd
@@ -234,3 +228,5 @@ services:
       postgresql-in-dckr-cmps:
         condition: service_healthy
 ```
+
+# TODO COPY, ADD, EXEC

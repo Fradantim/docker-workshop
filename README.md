@@ -25,10 +25,16 @@
   - [Instanciar app con driver postgresql](#instanciar-app-con-driver-postgresql)
     - [Imagen sobrecargada](#imagen-sobrecargada)
     - [Instanciar container de imagen sobrecargada](#instanciar-container-de-imagen-sobrecargada)
+    - [Capas de imagenes](#capas-de-imagenes)
   - [Diagrama](#diagrama)
   - [Apagar containers y borrar red](#apagar-containers-y-borrar-red)
   - [docker-compose](#docker-compose)
-- [TODO COPY, ADD, EXEC](#todo-copy-add-exec)
+- [Montar recursos](#montar-recursos)
+- [Logs de un container detachado](#logs-de-un-container-detachado)
+- [Lanzar comandos shell](#lanzar-comandos-shell)
+  - [En una imagen](#en-una-imagen)
+  - [En  un container](#en--un-container)
+- [Volumenes persistentes](#volumenes-persistentes)
 
 
 ---
@@ -36,7 +42,7 @@
 # Hola mundo docker
 
 ```cmd
-docker run hello-world
+docker run --rm hello-world
 ```
 
 # Listar imagenes en mi sistema
@@ -53,8 +59,8 @@ Preparo un archivo `Dockerfile-from-compilated-src`
 ```Dockerfile
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jre-jammy
-# descargo el jar de la aplicacion
-RUN wget https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.jar
+# descargo el .jar de la aplicacion
+ADD https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.jar .
 # o si ya tengo el .jar en mi PC puedo:
 # COPY graphql-2-jpa-8.jar .
 RUN mv graphql-2-jpa-8.jar graphql-2-jpa.jar
@@ -96,8 +102,8 @@ RUN sh mvnw clean package -DskipTests
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jre-jammy
 # copiar de la imagen builder el compilado y dejarlo en el directorio de trabajo de la imagen final
-COPY --from=builder target/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+COPY --from=builder target/*.jar graphql-2-jpa.jar
+ENTRYPOINT ["java","-jar","graphql-2-jpa.jar"]
 ```
 
 ```cmd
@@ -106,12 +112,12 @@ docker build -f Dockerfile-from-src -t graphql-2-jpa:from-src .
 
 # Ejecutar imagen docker
 ```cmd
-docker run graphql-2-jpa:from-compilated-src
+docker run --rm graphql-2-jpa:from-src
 ```
 
 ## Exposición de puerto
 ```cmd
-docker run -p 8080:8080 graphql-2-jpa:from-compilated-src
+docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 ```
 
 ---
@@ -126,12 +132,12 @@ docker network create my-network
 ## Instanciar BBDD PostgreSQL
 > info: https://hub.docker.com/_/postgres
 ```cmd
-docker run --network my-network --name my-postgresql-container -d -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:14.1-alpine
+docker run --rm --network my-network --name my-postgresql-container -d -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:14.1-alpine
 ```
 ## Instanciar adminer
 > info: https://hub.docker.com/_/adminer
 ```cmd
-docker run --network my-network -d -p 8081:8080 adminer:standalone
+docker run --rm --network my-network -d -p 8081:8080 adminer:standalone
 ```
 [adminer-frontend](http://localhost:8081)
 - server: my-postgresql-container
@@ -148,7 +154,7 @@ Creo `Dockerfile-psql`
 # a partir de esta imagen base
 FROM graphql-2-jpa:from-src
 # descargo driver postgresql
-RUN wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar
+ADD https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar .
 # cuando inicie el container de esta imagen lanzar el siguiente comando
 ENTRYPOINT ["java","-cp","graphql-2-jpa.jar:postgresql-42.7.3.jar", "org.springframework.boot.loader.launch.PropertiesLauncher"]
 ```
@@ -159,8 +165,17 @@ docker build -f Dockerfile-psql -t graphql-2-jpa:psql .
 
 ### Instanciar container de imagen sobrecargada
 ```cmd
-docker run --network my-network -d -p 8080:8080 graphql-2-jpa:psql --spring.datasource.url=jdbc:postgresql://my-postgresql-container:5432/postgres --spring.datasource.username=postgres --spring.datasource.password=postgres
+docker run --rm --network my-network -d -p 8080:8080 graphql-2-jpa:psql --spring.datasource.url=jdbc:postgresql://my-postgresql-container:5432/postgres --spring.datasource.username=postgres --spring.datasource.password=postgres
 ```
+
+### Capas de imagenes
+eclipse-temurin:21.0.3_9-jre-jammy -> graphql-2-jpa:from-src -> graphql-2-jpa:psql
+
+```cmd
+docker history graphql-2-jpa:psql
+```
+
+<table><colgroup width=85><colgroup width=382><colgroup width=85><colgroup width=382><tr><td><td><strong>IMAGEN</strong><td><strong>graphql-2-jpa:psql</strong><td><td><tr><td>18<td>0B<td>ENTRYPOINT ["java" "-cp" "graphql-2-jpa.jar:…<td><td><tr><td>17<td>1.09MB<td>ADD https://repo1.maven.org/maven2/org/postg…<td><td><tr><td><td><strong>IMAGEN</strong><td><strong>graphql-2-jpa:from-src</strong><td><td><tr><td>16<td>0B<td>ENTRYPOINT ["java" "-jar" "graphql-2-jpa.jar"]<td><td><tr><td>15<td>53MB<td>COPY target/*.jar graphql-2-jpa.jar # buildkit<td><td><tr><td><td><strong>IMAGEN</strong><td><strong><a href="https://hub.docker.com/layers/library/eclipse-temurin/21.0.3_9-jre-jammy/images/sha256-3186dd88a59659929855a6bb785b0528c812eb0b03d97fd6e2221526547ed322?context=explore">eclipse-temurin:21.0.3_9-jre-jammy</a></strong><td><strong>IMAGEN</strong><td><strong><a href="https://hub.docker.com/layers/library/eclipse-temurin/21.0.3_9-jdk-jammy/images/sha256-7291a4337ec7942c77490d4e44db3ec6d46cbef038b76108cec3949c0c06e550?context=explore">eclipse-temurin:21.0.3_9-jdk-jammy</a></strong><tr><td>15<td><td><td>0B<td>CMD ["jshell"]<tr><td>14<td>0B<td>ENTRYPOINT ["/__cacert_entrypoint.sh"]<td>0B<td>ENTRYPOINT ["/__cacert_entrypoint.sh"]<tr><td>13<td>1.18kB<td>COPY entrypoint.sh /__cacert_entrypoint.sh #…<td>1.18kB<td>COPY entrypoint.sh /__cacert_entrypoint.sh #…<tr><td>12<td>0B<td>RUN /bin/sh -c set -eux; echo "Verifying…<td>0B<td>RUN /bin/sh -c set -eux; echo "Verifying…<tr><td>11<td>165MB<td>RUN /bin/sh -c set -eux; ARCH="$(dpkg --…<td>308MB<td>RUN /bin/sh -c set -eux; ARCH="$(dpkg --…<tr><td>10<td>0B<td>ENV JAVA_VERSION=jdk-21.0.3+9<td>0B<td>ENV JAVA_VERSION=jdk-21.0.3+9<tr><td>9<td>36.1MB<td>RUN /bin/sh -c set -eux; apt-get update;…<td>50MB<td>RUN /bin/sh -c set -eux; apt-get update;…<tr><td>8<td>0B<td colspan=3>ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_AL…<tr><td>7<td>0B<td colspan=3>ENV PATH=/opt/java/openjdk/bin:/usr/local/sb…<tr><td>6<td>0B<td colspan=3>ENV JAVA_HOME=/opt/java/openjdk<tr><td>5<td>0B<td colspan=3>/bin/sh -c #(nop) CMD ["/bin/bash"]<tr><td>4<td>77.9MB<td colspan=3>/bin/sh -c #(nop) ADD file:89847d76d242dea90…<tr><td>3<td>0B<td colspan=3>/bin/sh -c #(nop) LABEL org.opencontainers.…<tr><td>2<td>0B<td colspan=3>/bin/sh -c #(nop) LABEL org.opencontainers.…<tr><td>1<td>0B<td colspan=3>/bin/sh -c #(nop) ARG LAUNCHPAD_BUILD_ARCH<tr><td>0<td>0B<td colspan=3>/bin/sh -c #(nop) ARG RELEASE</table>
 
 ## Diagrama
 ```mermaid
@@ -180,7 +195,7 @@ docker run --network my-network -d -p 8080:8080 graphql-2-jpa:psql --spring.data
 ```cmd
 docker container ls
 ```
-
+Si hubiera omitido `--rm` en el `docker run` tendría algo como lo siguiente:
 ```
 CONTAINER ID   IMAGE                  COMMAND                  CREATED             STATUS             PORTS                                       NAMES
 f254b48e41d6   graphql-2-jpa:psql     "java -cp app.jar:po…"   1 second ago        Up 1 second        0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   beautiful_bhabha
@@ -229,4 +244,84 @@ services:
         condition: service_healthy
 ```
 
-# TODO COPY, ADD, EXEC
+```cmd
+docker compose up
+```
+
+# Montar recursos
+Creemos un archivo `test.py`
+
+```python
+import time
+from datetime import datetime
+
+while True:
+  print(datetime.now())
+  time.sleep(1) # sleep 1 second
+```
+
+```cmd
+docker run --rm -it -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
+```
+*En este comando refuerzo -it "interactive" para que la salida de texto a terminal sea instantánea. ¿Cosa rara de la imagen de python en alpine?*
+
+# Logs de un container detachado
+
+Inicio contianer detachado
+```cmd
+docker run --rm -it -d --name my-python-container -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
+```
+
+```cmd
+docker container ls
+```
+
+```
+CONTAINER ID   IMAGE                      COMMAND                  CREATED         STATUS         PORTS     NAMES
+7c82626c2c77   python:3.12.4-alpine3.20   "python /app-src/tes…"   4 seconds ago   Up 3 seconds             my-python-container
+```
+
+```cmd
+docker logs --follow my-python-container
+```
+```cmd
+docker logs --follow --tail 1 my-python-container 
+```
+
+Detener el container
+```cmd
+docker container stop my-python-container
+```
+
+# Lanzar comandos shell
+
+## En una imagen
+```cmd
+docker run --rm -it --entrypoint bash graphql-2-jpa:from-src
+```
+
+## En  un container
+**Java - Debian (bash)**
+```cmd
+docker run -d --rm --name my-java-container graphql-2-jpa:from-src
+```
+```cmd
+docker exec -it my-java-container bash
+```
+
+**Python - Alpine (ash)**
+```cmd
+docker run --rm -it -d --name my-python-container -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
+```
+```cmd
+docker exec -it my-python-container ash
+```
+
+Detener todo
+```cmd
+docker container stop my-java-container my-python-container
+```
+
+# Volumenes persistentes
+TODO
+

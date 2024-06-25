@@ -210,6 +210,8 @@ docker network rm my-network
 ```
 
 ## docker-compose
+[podman setting up compose](https://podman-desktop.io/docs/compose/setting-up-compose)
+
 Crear archivo `docker-compose.yml`
 
 ```yml

@@ -1,7 +1,12 @@
 # docker-workshop
 
 # Links utiles
-- [podman](https://podman.io/) 
+- [docker](https://www.docker.com/)
+- [podman](https://podman.io/)
+  - Si tengo podman y no docker:
+    ```
+    doskey docker=podman $*
+    ```
 - [spring-graphql-2-jpa](https://github.com/Fradantim/spring-graphql-2-jpa)
 - [spring-graphql-2-jpa localhost 8080](http://localhost:8080/graphiql)
 - [postgresql driver](https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar)

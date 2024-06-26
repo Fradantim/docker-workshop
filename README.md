@@ -188,10 +188,11 @@ docker history graphql-2-jpa:psql
   flowchart LR
     subgraph host
       subgraph docker
-        B(postgresql)
-        A(adminer) -.->|5432|B
-        J(java-app) -.->|5432|B
-
+        subgraph my-network
+          B(postgresql)
+          A(adminer) -.->|5432|B
+          J(java-app) -.->|5432|B
+        end
         HB( ) -.->|5432|B 
         HA( ) -.->|8080|A
         HJ( ) -.->|8080|J
@@ -201,12 +202,13 @@ docker history graphql-2-jpa:psql
     N([network]) -.->|8081|HA
     N([network]) -.->|8080|HJ
 
-  classDef container fill:lime;
+  classDef container fill:white,stroke:black;
   class A,J,B container;
-  style N fill:white;
+  style N fill:white,stroke:black;
 
-  style host fill:lightgrey;
-  style docker fill:lightblue;
+  style host fill:#e8ebd3,stroke:black;
+  style docker fill:#d3e8eb,stroke:black;
+  style my-network fill:#d3d3eb,stroke:black;
 ```
 
 ## Apagar containers y borrar red

@@ -185,22 +185,28 @@ docker history graphql-2-jpa:psql
 
 ## Diagrama
 ```mermaid
-  flowchart TD
-      B(postgresql)
-      A(adminer) -.->|5432|B
-      J(java-app) -.->|5432|B
-      
-      HB[HOST] -.->|5432|B
-      HA[HOST] -.->|8080|A
-      HJ[HOST] -.->|8080|J
+  flowchart LR
+    subgraph host
+      subgraph docker
+        B(postgresql)
+        A(adminer) -.->|5432|B
+        J(java-app) -.->|5432|B
 
-      N([network]) -.->|5432|HB
-      N([network]) -.->|8081|HA
-      N([network]) -.->|8080|HJ
+        HB( ) -.->|5432|B 
+        HA( ) -.->|8080|A
+        HJ( ) -.->|8080|J
+      end
+    end
+    N([network]) -.->|5432|HB
+    N([network]) -.->|8081|HA
+    N([network]) -.->|8080|HJ
 
   classDef container fill:lime;
   class A,J,B container;
   style N fill:white;
+
+  style host fill:lightgrey;
+  style docker fill:lightblue;
 ```
 
 ## Apagar containers y borrar red

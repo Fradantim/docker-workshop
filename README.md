@@ -188,13 +188,19 @@ docker history graphql-2-jpa:psql
   flowchart TD
       B(postgresql)
       A(adminer) -.->|5432|B
-      J(java app) -.->|5432|B
-      H[HOST] -.->|5432|B
-      H -.->|8080|J
-      H -.->|8081 ➤ 8080|A
+      J(java-app) -.->|5432|B
+      
+      HB[HOST] -.->|5432|B
+      HA[HOST] -.->|8080|A
+      HJ[HOST] -.->|8080|J
+
+      N([network]) -.->|5432|HB
+      N([network]) -.->|8081|HA
+      N([network]) -.->|8080|HJ
 
   classDef container fill:lime;
   class A,J,B container;
+  style N fill:white;
 ```
 
 ## Apagar containers y borrar red

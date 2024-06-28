@@ -215,14 +215,13 @@ docker history graphql-2-jpa:psql
 ```cmd
 docker container ls
 ```
-Si hubiera omitido `--rm` en el `docker run` tendría algo como lo siguiente:
 ```
 CONTAINER ID   IMAGE                  COMMAND                  CREATED             STATUS             PORTS                                       NAMES
 f254b48e41d6   graphql-2-jpa:psql     "java -cp app.jar:po…"   1 second ago        Up 1 second        0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   beautiful_bhabha
 a3ac3fdd61ac   postgres:14.1-alpine   "docker-entrypoint.s…"   13 minutes ago      Up 13 minutes      0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   my-postgresql-container
 5c91983a4102   adminer:standalone     "entrypoint.sh php -…"   About an hour ago   Up About an hour   0.0.0.0:8081->8080/tcp, :::8081->8080/tcp   eloquent_cartwright
 ```
-
+Si hubiera omitido `--rm` en el `docker run` podría aplicarlo ahora:
 ```cmd
 docker container stop beautiful_bhabha my-postgresql-container eloquent_cartwright
 docker container rm beautiful_bhabha my-postgresql-container eloquent_cartwright

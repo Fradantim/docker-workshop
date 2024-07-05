@@ -350,3 +350,28 @@ TODO
 TODO
 
 TODO portainer
+
+# Container IDE
+
+TODO agregar docker para docker containers acá
+
+```cmd
+docker run --rm -it -p 8080:8080 codercom/code-server:4.90.3-ubuntu --auth none
+```
+[vscode-container](http://localhost:8080)
+
+Dentro de la terminal del IDE <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> (o menu ☰ -> `Terminal` -> `New Terminal`)
+```bash
+sudo apt update
+sudo apt install unzip zip -y
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java 21.0.3-graal -y
+git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
+cd spring-graphql-2-jpa
+```
+Para iniciar la app
+```bash
+sh mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+```
+[vscode-container-app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)

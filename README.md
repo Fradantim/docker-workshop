@@ -50,8 +50,10 @@
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
 - [Volumenes persistentes](#volumenes-persistentes)
-- [Test containers](#test-containers)
+- [Portainer](#portainer)
 - [Container IDE](#container-ide)
+- [Test containers](#test-containers)
+- [PRUNEO](#pruneo)
 
 
 ---
@@ -357,10 +359,24 @@ docker container stop my-java-container my-python-container
 # Volumenes persistentes
 TODO
 
-# Test containers
-TODO
+# Portainer
 
-TODO portainer
+[portainer.io](https://www.portainer.io/)
+[local portainer](http://www.localhost:9000)
+
+Ubicar docker entrypoint
+```cmd
+docker context ls
+```
+```
+NAME         DESCRIPTION                               DOCKER ENDPOINT                     ERROR
+default      Current DOCKER_HOST based configuration   unix:///var/run/docker.sock         
+rootless *   Rootless mode                             unix:///run/user/1000/docker.sock   
+```
+
+```cmd
+docker run --rm -p 9000:9000 -v /run/user/1000/docker.sock:/var/run/docker.sock portainer/portainer-ce:latest
+```
 
 # Container IDE
 
@@ -406,3 +422,15 @@ docker compose -f docker-compose-web-ide.yml up
 [vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
 
 [vscode-container app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)
+
+
+# Test containers
+TODO
+
+# PRUNEO
+
+```cmd
+docker container prune
+docker image prune
+docker builder prune
+```

@@ -9,6 +9,16 @@
     ```
 - [spring-graphql-2-jpa](https://github.com/Fradantim/spring-graphql-2-jpa)
 - [spring-graphql-2-jpa localhost 8080](http://localhost:8080/graphiql)
+  - graphql query:
+    ```graphql
+    {
+      findBookById(id: 1){
+        name isbn
+        author { name }
+        quotes { text }
+      }
+    }
+    ```
 - [postgresql driver](https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar)
 
 ---
@@ -41,6 +51,7 @@
   - [En  un container](#en--un-container)
 - [Volumenes persistentes](#volumenes-persistentes)
 - [Test containers](#test-containers)
+- [Container IDE](#container-ide)
 
 
 ---
@@ -355,23 +366,43 @@ TODO portainer
 
 TODO agregar docker para docker containers acá
 
-```cmd
-docker run --rm -it -p 8080:8080 codercom/code-server:4.90.3-ubuntu --auth none
-```
-[vscode-container](http://localhost:8080)
+Creemos `docker-compose-web-ide.yml`
 
-Dentro de la terminal del IDE <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> (o menu ☰ -> `Terminal` -> `New Terminal`)
-```bash
-sudo apt update
-sudo apt install unzip zip -y
-curl -s "https://get.sdkman.io" | bash
-source "$HOME/.sdkman/bin/sdkman-init.sh"
-sdk install java 21.0.3-graal -y
-git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
-cd spring-graphql-2-jpa
+```yml
+version: '3.8'
+services:
+  web-ide:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM codercom/code-server:4.90.3-ubuntu
+        # descargo e instalo JDK 21 ~188MB
+        ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz .
+        USER root
+        RUN tar -xvzf jdk-21.0.2_linux-x64_bin.tar.gz
+        RUN rm jdk-21.0.2_linux-x64_bin.tar.gz
+        RUN mv jdk-21.0.2 /
+        RUN chmod --recursive +rx /jdk-21.0.2
+        USER coder
+        ENV JAVA_HOME=/jdk-21.0.2
+        # instalo extensiones de java para vs code
+        RUN code-server --install-extension redhat.java
+        RUN code-server --install-extension vscjava.vscode-java-debug
+        RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
+    command: --auth none
+    ports:
+      - "8080:8080"
+    volumes:
+      # opcional, librerias de mvn 
+      - "~/.m2/repository:/home/coder/.m2/repository" # linux
+      #- "~/.m2/repository:/home/coder/.m2/repository" # windows TODO
 ```
-Para iniciar la app
-```bash
-sh mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+
+```cmd
+docker compose -f docker-compose-web-ide.yml up
 ```
-[vscode-container-app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)
+> Building 98.6s (14/14)
+
+[vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
+
+[vscode-container app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)

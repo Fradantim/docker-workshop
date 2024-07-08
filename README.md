@@ -51,6 +51,7 @@
   - [En  un container](#en--un-container)
 - [Volumenes persistentes](#volumenes-persistentes)
 - [Portainer](#portainer)
+- [Pusheo a repo](#pusheo-a-repo)
 - [Container IDE](#container-ide)
 - [Test containers](#test-containers)
 - [PRUNEO](#pruneo)
@@ -378,6 +379,9 @@ rootless *   Rootless mode                             unix:///run/user/1000/doc
 docker run --rm -p 9000:9000 -v /run/user/1000/docker.sock:/var/run/docker.sock portainer/portainer-ce:latest
 ```
 
+# Pusheo a repo
+TODO
+
 # Container IDE
 
 TODO agregar docker para docker containers acá
@@ -404,20 +408,34 @@ services:
         # instalo extensiones de java para vs code
         RUN code-server --install-extension redhat.java
         RUN code-server --install-extension vscjava.vscode-java-debug
+
+        # instalo docker (https://docs.docker.com/engine/install/ubuntu/)
+        RUN curl -fsSL https://get.docker.com -o get-docker.sh
+        RUN sudo sh ./get-docker.sh
+
+        # ejecutar docker como non-root (https://docs.docker.com/engine/install/linux-postinstall/)
+        # RUN sudo groupadd docker
+        RUN sudo usermod -aG docker coder
+        RUN newgrp docker
+
+        # instalo el codigo fuente sobre el que voy a trabajar (podria montarlo con un volumen)
         RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
     command: --auth none
     ports:
       - "8080:8080"
     volumes:
+      # docker in docker
+      - /run/user/1000/docker.sock:/var/run/docker.sock # unix
+      #- /run/user/1000/docker.sock:/var/run/docker.sock # windows TODO
       # opcional, librerias de mvn 
-      - "~/.m2/repository:/home/coder/.m2/repository" # linux
+      - "~/.m2/repository:/home/coder/.m2/repository" # unix
       #- "~/.m2/repository:/home/coder/.m2/repository" # windows TODO
 ```
 
 ```cmd
 docker compose -f docker-compose-web-ide.yml up
 ```
-> Building 98.6s (14/14)
+> Building 139.6s (18/18)
 
 [vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
 

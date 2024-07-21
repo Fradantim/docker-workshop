@@ -44,8 +44,8 @@
   - [Diagrama](#diagrama)
   - [Apagar containers y borrar red](#apagar-containers-y-borrar-red)
   - [docker-compose](#docker-compose)
-- [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Montar recursos](#montar-recursos)
+- [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Lanzar comandos shell](#lanzar-comandos-shell)
   - [En una imagen](#en-una-imagen)
@@ -284,6 +284,25 @@ services:
 docker compose up
 ```
 
+
+# Montar recursos
+Creemos un archivo `test.py`
+
+```python
+import time
+from datetime import datetime
+
+while True:
+  print(datetime.now())
+  time.sleep(1) # sleep 1 second
+```
+
+```cmd
+docker run --rm -it -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
+```
+*En este comando refuerzo -it "interactive" para que la salida de texto a terminal sea instantánea. ¿Cosa rara de la imagen de python en alpine?*
+
+
 # Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)
 
 Descargo el archivo .war (o lo proveo si tengo uno)
@@ -307,28 +326,6 @@ services:
 
 [graphiql](http://localhost:8080/graphql-2-jpa/graphiql?path=/graphql-2-jpa/graphql)
 
-quay.io/wildfly/wildfly:27.0.0.Final-jdk17
-https://quay.io/repository/wildfly/wildfly
-FROM quay.io/wildfly/wildfly
-ADD your-awesome-app.war /opt/jboss/wildfly/standalone/deployments/
-
-
-# Montar recursos
-Creemos un archivo `test.py`
-
-```python
-import time
-from datetime import datetime
-
-while True:
-  print(datetime.now())
-  time.sleep(1) # sleep 1 second
-```
-
-```cmd
-docker run --rm -it -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
-```
-*En este comando refuerzo -it "interactive" para que la salida de texto a terminal sea instantánea. ¿Cosa rara de la imagen de python en alpine?*
 
 # Logs de un container detachado
 

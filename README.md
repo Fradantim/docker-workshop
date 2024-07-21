@@ -51,6 +51,8 @@
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
 - [Volumenes persistentes](#volumenes-persistentes)
+  - [Storage volatil](#storage-volatil)
+  - [Creacion](#creacion)
 - [Portainer](#portainer)
 - [Pusheo a repo](#pusheo-a-repo)
 - [Container IDE](#container-ide)
@@ -385,7 +387,52 @@ docker container stop my-java-container my-python-container
 ```
 
 # Volumenes persistentes
-TODO
+
+## Storage volatil
+```cmd
+docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+mkdir /my-directory
+cd /my-directory/
+echo the file content  > my-file.txt
+ls
+cat my-file.txt 
+exit
+```
+
+Mato container, lo re-creo y busco mis archivos creados
+```cmd
+docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+```
+que pasó?
+
+
+## Creacion
+```cmd
+docker volume create my-volume
+docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+echo the file content  > my-file.txt
+ls
+cat my-file.txt 
+exit
+```
+
+Mato container, lo re-creo y busco mis archivos creados
+```cmd
+docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+ls my-file.txt 
+cat 
+```
 
 # Portainer
 

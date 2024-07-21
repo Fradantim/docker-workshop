@@ -291,8 +291,14 @@ docker compose up
 Creemos un archivo `test.py`
 
 ```python
-import time
+import time, platform
 from datetime import datetime
+
+required_version = '3.12.4'
+current_version  = platform.python_version()
+
+if current_version != required_version:
+    raise Exception(f'Must be using Python {required_version}, but found {current_version}')
 
 while True:
   print(datetime.now())
@@ -454,7 +460,47 @@ docker run --rm -p 9000:9000 -v /run/user/1000/docker.sock:/var/run/docker.sock 
 ```
 
 # Pusheo a repo
-TODO
+[docker registry image](https://hub.docker.com/_/registry)
+
+Iniciar container registry
+```cmd
+docker run --rm -d -p 5000:5000 --name registry registry
+```
+
+Creemos una nueva tag en nuestro local y la pusheamos al registry
+
+```cmd
+docker tag graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:from-src
+docker push localhost:5000/graphql-2-jpa:from-src
+```
+
+[Info de la imagen en registry](http://localhost:5000/v2/graphql-2-jpa/tags/list)
+
+Creemos otra tag más para la misma imagen en nuestro local y la pusheamos al registry
+```cmd
+docker tag graphql-2-jpa:psql localhost:5000/graphql-2-jpa:psql
+docker push localhost:5000/graphql-2-jpa:psql
+```
+
+Borro ambas tags de mi local (y todas las imagenes que puedan compartir las mismas capas)
+```cmd
+docker image rm eclipse-temurin:21.0.3_9-jre-jammy eclipse-temurin:21.0.3_9-jdk-jammy graphql-2-jpa:psql localhost:5000/graphql-2-jpa:from-src graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:psql
+```
+
+Las vuelvo a descargar de el registry
+```cmd
+docker pull localhost:5000/graphql-2-jpa:from-src
+docker pull localhost:5000/graphql-2-jpa:psql
+```
+
+```cmd
+docker image ls
+```
+
+Detener container registry
+```cmd
+docker container registry stop
+```
 
 # Container IDE
 

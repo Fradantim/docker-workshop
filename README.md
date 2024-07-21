@@ -44,6 +44,7 @@
   - [Diagrama](#diagrama)
   - [Apagar containers y borrar red](#apagar-containers-y-borrar-red)
   - [docker-compose](#docker-compose)
+- [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Montar recursos](#montar-recursos)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Lanzar comandos shell](#lanzar-comandos-shell)
@@ -282,6 +283,35 @@ services:
 ```cmd
 docker compose up
 ```
+
+# Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)
+
+Descargo el archivo .war (o lo proveo si tengo uno)
+```cmd
+curl -fOsSL  https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.war
+```
+
+Creo el archivo `docker-compose-servlet-container.yml`:
+
+```yml
+services:
+  setvlet-container:
+    image: tomcat:10-jre17 # tomcat
+    # image: quay.io/wildfly/wildfly:27.0.0.Final-jdk17 # jboss wildfly
+    volumes:
+      - ./graphql-2-jpa-8.war:/usr/local/tomcat/webapps/graphql-2-jpa.war:ro # para tomcat
+      # - ./graphql-2-jpa-8.war:/opt/jboss/wildfly/standalone/deployments/graphql-2-jpa.war:ro # para jboss wildfly
+    ports:
+      - 8080:8080
+```
+
+[graphiql](http://localhost:8080/graphql-2-jpa/graphiql?path=/graphql-2-jpa/graphql)
+
+quay.io/wildfly/wildfly:27.0.0.Final-jdk17
+https://quay.io/repository/wildfly/wildfly
+FROM quay.io/wildfly/wildfly
+ADD your-awesome-app.war /opt/jboss/wildfly/standalone/deployments/
+
 
 # Montar recursos
 Creemos un archivo `test.py`

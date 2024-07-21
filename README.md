@@ -568,7 +568,8 @@ TODO
 # PRUNEO
 
 ```cmd
-docker container prune
-docker image prune
-docker builder prune
+docker container prune -a
+docker image prune -a
+docker volume prune -a
+docker builder prune -a
 ```

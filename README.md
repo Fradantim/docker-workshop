@@ -33,7 +33,7 @@
 - [Creacion de imagen docker a partir de código fuente](#creacion-de-imagen-docker-a-partir-de-código-fuente)
 - [Ejecutar imagen docker](#ejecutar-imagen-docker)
   - [Exposición de puerto](#exposición-de-puerto)
-- [Integracion](#integracion)
+- [Integracion de containers](#integracion-de-containers)
   - [Crear una red](#crear-una-red)
   - [Instanciar BBDD PostgreSQL](#instanciar-bbdd-postgresql)
   - [Instanciar adminer](#instanciar-adminer)
@@ -53,9 +53,12 @@
 - [Volumenes persistentes](#volumenes-persistentes)
   - [Storage volatil](#storage-volatil)
   - [Creacion](#creacion)
-- [Portainer](#portainer)
+- [Docker in docker](#docker-in-docker)
+  - [Portainer](#portainer)
 - [Pusheo a repo](#pusheo-a-repo)
-- [Container IDE](#container-ide)
+- [Utiles](#utiles)
+  - [Container IDE](#container-ide)
+  - [Análisis de vulnerabilidades](#análisis-de-vulnerabilidades)
 - [Test containers](#test-containers)
 - [PRUNEO](#pruneo)
 
@@ -145,8 +148,7 @@ docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 
 ---
 
-# Integracion
-
+# Integracion de containers
 
 ## Crear una red
 ```cmd
@@ -440,7 +442,19 @@ ls my-file.txt
 cat 
 ```
 
-# Portainer
+# Docker in docker
+
+```cmd
+docker run --rm -d --privileged --name dind docker:dind
+docker exec dind docker run alpine echo hello
+docker stop dind
+```
+
+```cmd
+podman run --rm --user podman --device /dev/fuse quay.io/podman/stable podman run alpine echo hello
+```
+
+## Portainer
 
 [portainer.io](https://www.portainer.io/)
 [local portainer](http://www.localhost:9000)
@@ -449,6 +463,8 @@ Ubicar docker entrypoint
 ```cmd
 docker context ls
 ```
+
+**Docker**
 ```
 NAME         DESCRIPTION                               DOCKER ENDPOINT                     ERROR
 default      Current DOCKER_HOST based configuration   unix:///var/run/docker.sock         
@@ -457,6 +473,17 @@ rootless *   Rootless mode                             unix:///run/user/1000/doc
 
 ```cmd
 docker run --rm -p 9000:9000 -v /run/user/1000/docker.sock:/var/run/docker.sock portainer/portainer-ce:latest
+```
+
+**Podman**
+```
+Name                         URI                                                          Identity                                                                  Default     ReadWrite
+podman-machine-default       ssh://user@127.0.0.1:59462/run/user/1000/podman/podman.sock  C:\Users\franco.d.timpone\.local\share\containers\podman\machine\machine  false       true
+podman-machine-default-root  ssh://root@127.0.0.1:59462/run/podman/podman.sock            C:\Users\franco.d.timpone\.local\share\containers\podman\machine\machine  true        true
+```
+
+```cmd
+docker run --rm -p 9000:9000 -v /run/podman/podman.sock:/var/run/docker.sock portainer/portainer-ce:latest
 ```
 
 # Pusheo a repo
@@ -506,12 +533,12 @@ docker container registry stop
 
 ## Container IDE
 
-TODO agregar docker para docker containers acá
+<details>
+<summary>The docker way (no podman)</summary>
 
 Creemos `docker-compose-web-ide.yml`
 
 ```yml
-version: '3.8'
 services:
   web-ide:
     build:
@@ -548,16 +575,74 @@ services:
     volumes:
       # docker in docker
       - /run/user/1000/docker.sock:/var/run/docker.sock # unix
-      #- /run/user/1000/docker.sock:/var/run/docker.sock # windows TODO
+      - "~/.m2/repository:/home/coder/.m2/repository"
+```
+
+> Building 139.6s (18/18)
+
+</details>
+
+[containers/podman-compose Support for dockerfile_inline missing](https://github.com/containers/podman-compose/issues/864)
+
+Creemos `Dockerfile-web-ide`
+
+```Dockerfile
+FROM codercom/code-server:4.90.3-ubuntu
+# descargo e instalo JDK 21 ~188MB
+ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz .
+USER root
+RUN tar -xvzf jdk-21.0.2_linux-x64_bin.tar.gz
+RUN rm jdk-21.0.2_linux-x64_bin.tar.gz
+RUN mv jdk-21.0.2 /
+RUN chmod --recursive +rx /jdk-21.0.2
+USER coder
+ENV JAVA_HOME=/jdk-21.0.2
+# instalo extensiones de java para vs code
+RUN code-server --install-extension redhat.java
+RUN code-server --install-extension vscjava.vscode-java-debug
+
+# instalo docker (solo el cliente) (https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+RUN sudo apt-get update
+RUN sudo apt-get install ca-certificates curl
+RUN sudo install -m 0755 -d /etc/apt/keyrings
+RUN sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+RUN sudo chmod a+r /etc/apt/keyrings/docker.asc
+    
+USER root
+RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu/ focal stable" > /etc/apt/sources.list.d/docker.list
+USER coder
+
+RUN sudo apt-get update
+RUN sudo apt install docker-ce-cli -y
+
+# instalo el codigo fuente sobre el que voy a trabajar (podria montarlo con un volumen)
+RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
+```
+
+Creemos `docker-compose-web-ide.yml`
+
+```yml
+services:
+  web-ide:
+    build:
+      context: .
+      dockerfile: Dockerfile-web-ide
+    command: --auth none
+    ports:
+      - "8080:8080"
+    environment:
+      - DOCKER_HOST=tcp://dind:2375
+    volumes:
       # opcional, librerias de mvn 
-      - "~/.m2/repository:/home/coder/.m2/repository" # unix
-      #- "~/.m2/repository:/home/coder/.m2/repository" # windows TODO
+      - "~/.m2/repository:/home/coder/.m2/repository"
+  dind:
+    image: docker:18.09.9-dind
+    privileged: true
 ```
 
 ```cmd
 docker compose -f docker-compose-web-ide.yml up
 ```
-> Building 139.6s (18/18)
 
 [vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
 
@@ -565,8 +650,9 @@ docker compose -f docker-compose-web-ide.yml up
 
 ## Análisis de vulnerabilidades
 
-TODO
-
+```cmd
+docker run -v /run/podman/podman.sock:/var/run/docker.sock aquasec/trivy image graphql-2-jpa:from-compilated-src
+```
 
 # Test containers
 TODO

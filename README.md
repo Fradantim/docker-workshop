@@ -502,7 +502,9 @@ Detener container registry
 docker container registry stop
 ```
 
-# Container IDE
+# Utiles
+
+## Container IDE
 
 TODO agregar docker para docker containers acá
 
@@ -560,6 +562,10 @@ docker compose -f docker-compose-web-ide.yml up
 [vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
 
 [vscode-container app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)
+
+## Análisis de vulnerabilidades
+
+TODO
 
 
 # Test containers

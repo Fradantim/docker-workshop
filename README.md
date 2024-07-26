@@ -592,21 +592,19 @@ FROM codercom/code-server:4.90.3-ubuntu
 # descargo e instalo JDK 21 ~188MB
 ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz .
 USER root
-RUN tar -xvzf jdk-21.0.2_linux-x64_bin.tar.gz
-RUN rm jdk-21.0.2_linux-x64_bin.tar.gz
-RUN mv jdk-21.0.2 /
-RUN chmod --recursive +rx /jdk-21.0.2
+RUN tar -xzf jdk-21.0.2_linux-x64_bin.tar.gz && rm jdk-21.0.2_linux-x64_bin.tar.gz && mv jdk-21.0.2 /jdk-21.0.2 && chmod --recursive +rx /jdk-21.0.2
 USER coder
 ENV JAVA_HOME=/jdk-21.0.2
+ENV PATH="$PATH:$JAVA_HOME/bin"
+# Ayuda a que no choque el directorio m2 con el mount mas adelante
+RUN mkdir .m2
 
 # instalo extensiones de java para vs code
-RUN code-server --install-extension redhat.java
-RUN code-server --install-extension vscjava.vscode-java-debug
+RUN code-server --install-extension redhat.java && code-server --install-extension vscjava.vscode-java-debug
 
 # instalo cliente docker (https://docs.docker.com/engine/install/ubuntu/#install-from-a-package)
 ADD https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb .
-RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
-RUN rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
+RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb && rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
 
 # instalo el codigo fuente sobre el que voy a trabajar (podria montarlo con un volumen)
 RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git

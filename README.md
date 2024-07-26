@@ -588,6 +588,7 @@ Creemos `Dockerfile-web-ide`
 
 ```Dockerfile
 FROM codercom/code-server:4.90.3-ubuntu
+
 # descargo e instalo JDK 21 ~188MB
 ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz .
 USER root
@@ -597,23 +598,15 @@ RUN mv jdk-21.0.2 /
 RUN chmod --recursive +rx /jdk-21.0.2
 USER coder
 ENV JAVA_HOME=/jdk-21.0.2
+
 # instalo extensiones de java para vs code
 RUN code-server --install-extension redhat.java
 RUN code-server --install-extension vscjava.vscode-java-debug
 
-# instalo docker (solo el cliente) (https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-RUN sudo apt-get update
-RUN sudo apt-get install ca-certificates curl
-RUN sudo install -m 0755 -d /etc/apt/keyrings
-RUN sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-RUN sudo chmod a+r /etc/apt/keyrings/docker.asc
-    
-USER root
-RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu/ focal stable" > /etc/apt/sources.list.d/docker.list
-USER coder
-
-RUN sudo apt-get update
-RUN sudo apt install docker-ce-cli -y
+# instalo cliente docker (https://docs.docker.com/engine/install/ubuntu/#install-from-a-package)
+ADD https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb .
+RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
+RUN rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
 
 # instalo el codigo fuente sobre el que voy a trabajar (podria montarlo con un volumen)
 RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git

@@ -86,10 +86,9 @@ Preparo un archivo `Dockerfile-from-compilated-src`
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jre-jammy
 # descargo el .jar de la aplicacion
-ADD https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.jar .
+ADD https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.jar ./graphql-2-jpa.jar
 # o si ya tengo el .jar en mi PC puedo:
-# COPY graphql-2-jpa-8.jar .
-RUN mv graphql-2-jpa-8.jar graphql-2-jpa.jar
+# COPY graphql-2-jpa.jar .
 # cuando inicie el container de esta imagen lanzar el siguiente comando
 ENTRYPOINT ["java","-jar","graphql-2-jpa.jar"]
 ```
@@ -110,18 +109,34 @@ docker build -f Dockerfile-from-compilated-src -t graphql-2-jpa:from-compilated-
 ```
 
 # Creacion de imagen docker a partir de código fuente
+
+Descargo el código fuente
+```cmd
+git clone https://github.com/Fradantim/spring-graphql-2-jpa.git --branch=8
+```
+
+<details>
+<summary>Plan B si no tengo git (mal ahi)</summary>
+
+```cmd
+curl -fOsSL https://github.com/Fradantim/spring-graphql-2-jpa/archive/refs/tags/8.zip
+tar -xf 8.zip
+del 8.zip
+move spring-graphql-2-jpa-8 spring-graphql-2-jpa
+```
+
+</details>
+
+
 Preparo un archivo `Dockerfile-from-src`
 ```Dockerfile
+# "Multi stage build"
 # imagen constructora
 # a partir de esta imagen base
 FROM eclipse-temurin:21.0.3_9-jdk-jammy AS builder
-# descargar el codigo fuente
-RUN apt update && apt install git -y
-RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git --branch=8
-RUN mv spring-graphql-2-jpa/* spring-graphql-2-jpa/.[!.]* .
-# o si ya tengo el src en mi PC puedo:
-# COPY graphql-2-jpa-8 .
-# compilarlo
+# copio el fuente
+COPY spring-graphql-2-jpa .
+# compilo
 RUN sh mvnw clean package -DskipTests
 
 # imagen final
@@ -594,10 +609,10 @@ ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz 
 USER root
 RUN tar -xzf jdk-21.0.2_linux-x64_bin.tar.gz && rm jdk-21.0.2_linux-x64_bin.tar.gz && mv jdk-21.0.2 /jdk-21.0.2 && chmod --recursive +rx /jdk-21.0.2
 USER coder
+# Ayuda a que no choque el directorio con el mount mas adelante
+RUN mkdir .m2
 ENV JAVA_HOME=/jdk-21.0.2
 ENV PATH="$PATH:$JAVA_HOME/bin"
-# Ayuda a que no choque el directorio m2 con el mount mas adelante
-RUN mkdir .m2
 
 # instalo extensiones de java para vs code
 RUN code-server --install-extension redhat.java && code-server --install-extension vscjava.vscode-java-debug
@@ -605,9 +620,6 @@ RUN code-server --install-extension redhat.java && code-server --install-extensi
 # instalo cliente docker (https://docs.docker.com/engine/install/ubuntu/#install-from-a-package)
 ADD https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb .
 RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb && rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
-
-# instalo el codigo fuente sobre el que voy a trabajar (podria montarlo con un volumen)
-RUN git clone https://github.com/Fradantim/spring-graphql-2-jpa.git
 ```
 
 Creemos `docker-compose-web-ide.yml`
@@ -625,7 +637,8 @@ services:
       - DOCKER_HOST=tcp://dind:2375
     volumes:
       # opcional, librerias de mvn 
-      - "~/.m2/repository:/home/coder/.m2/repository"
+      - ~/.m2/repository:/home/coder/.m2/repository
+      - ./spring-graphql-2-jpa:/home/coder/spring-graphql-2-jpa
   dind:
     image: docker:18.09.9-dind
     privileged: true
@@ -642,7 +655,8 @@ docker compose -f docker-compose-web-ide.yml up
 ## Análisis de vulnerabilidades
 
 ```cmd
-docker run -v /run/podman/podman.sock:/var/run/docker.sock aquasec/trivy image graphql-2-jpa:from-compilated-src
+mkdir aquasec-trivy-cache
+docker run -v ./aquasec-trivy-cache:/root/.cache/ -v /run/podman/podman.sock:/var/run/docker.sock aquasec/trivy image graphql-2-jpa:from-compilated-src
 ```
 
 # Test containers

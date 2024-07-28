@@ -605,6 +605,9 @@ Creemos `Dockerfile-web-ide`
 FROM codercom/code-server:4.90.3-ubuntu
 
 # descargo e instalo JDK 21 ~188MB
+FROM codercom/code-server:4.90.3-ubuntu
+
+# descargo e instalo JDK 21 ~188MB
 ADD https://download.oracle.com/java/21/archive/jdk-21.0.2_linux-x64_bin.tar.gz .
 USER root
 RUN tar -xzf jdk-21.0.2_linux-x64_bin.tar.gz && rm jdk-21.0.2_linux-x64_bin.tar.gz && mv jdk-21.0.2 /jdk-21.0.2 && chmod --recursive +rx /jdk-21.0.2
@@ -615,11 +618,11 @@ ENV JAVA_HOME=/jdk-21.0.2
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
 # instalo extensiones de java para vs code
-RUN code-server --install-extension redhat.java && code-server --install-extension vscjava.vscode-java-debug
+RUN code-server --install-extension redhat.java && code-server --install-extension vscjava.vscode-java-debug && code-server --install-extension vscjava.vscode-java-test
 
 # instalo cliente docker (https://docs.docker.com/engine/install/ubuntu/#install-from-a-package)
-ADD https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb .
-RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb && rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb
+ADD https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-compose-plugin_2.29.1-1~ubuntu.20.04~focal_amd64.deb .
+RUN sudo dpkg -i docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb docker-compose-plugin_2.29.1-1~ubuntu.20.04~focal_amd64.deb && rm docker-ce-cli_27.1.1-1~ubuntu.20.04~focal_amd64.deb docker-compose-plugin_2.29.1-1~ubuntu.20.04~focal_amd64.deb
 ```
 
 Creemos `docker-compose-web-ide.yml`
@@ -639,6 +642,7 @@ services:
       # opcional, librerias de mvn 
       - ~/.m2/repository:/home/coder/.m2/repository
       - ./spring-graphql-2-jpa:/home/coder/spring-graphql-2-jpa
+      - ./test-containers-example:/home/coder/test-containers-example
   dind:
     image: docker:18.09.9-dind
     privileged: true
@@ -650,7 +654,7 @@ docker compose -f docker-compose-web-ide.yml up
 
 [vscode-container](http://localhost:8080/?folder=/home/coder/spring-graphql-2-jpa)
 
-[vscode-container app](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)
+[vscode-container graphiql](http://localhost:8080/proxy/8081/graphiql?path=/proxy/8081/graphql)
 
 ## Análisis de vulnerabilidades
 
@@ -660,7 +664,9 @@ docker run -v ./aquasec-trivy-cache:/root/.cache/ -v /run/podman/podman.sock:/va
 ```
 
 # Test containers
-TODO
+
+[Spring Tips: Testcontainers, Docker Compose, and Service Connections, oh my!](https://www.youtube.com/watch?v=msb2b3BeeQo&ab_channel=SpringDeveloper)
+[![Spring Tips: Testcontainers, Docker Compose, and Service Connections, oh my!](https://img.youtube.com/vi/msb2b3BeeQo/default.jpg)](https://www.youtube.com/watch?v=msb2b3BeeQo&ab_channel=SpringDeveloper)
 
 # PRUNEO
 

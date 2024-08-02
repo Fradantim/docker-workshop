@@ -676,3 +676,6 @@ docker image prune -a
 docker volume prune -a
 docker builder prune -a
 ```
+
+
+TODO Ejercicio PHP / NodeJS / Kafka

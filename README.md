@@ -40,6 +40,9 @@
 - [Creacion de imagen docker a partir de código fuente](#creacion-de-imagen-docker-a-partir-de-código-fuente)
 - [Ejecutar imagen docker](#ejecutar-imagen-docker)
   - [Exposición de puerto](#exposición-de-puerto)
+- [Ejercicios](#ejercicios)
+  - [Instanciar una imagen de nyancat en la terminal](#instanciar-una-imagen-de-nyancat-en-la-terminal)
+  - [Instanciar una imagen de Doom '93](#instanciar-una-imagen-de-doom-93)
 - [Integracion de containers](#integracion-de-containers)
   - [Crear una red](#crear-una-red)
   - [Instanciar BBDD PostgreSQL](#instanciar-bbdd-postgresql)
@@ -167,6 +170,16 @@ docker run --rm graphql-2-jpa:from-src
 ```cmd
 docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 ```
+
+# Ejercicios
+
+## Instanciar una imagen de nyancat en la terminal
+
+[Pista](https://hub.docker.com/r/06kellyjac/nyancat)
+
+## Instanciar una imagen de Doom '93
+
+[Pista](https://hub.docker.com/r/kasmweb/doom)
 
 ---
 

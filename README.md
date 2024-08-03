@@ -21,6 +21,13 @@
     ```
 - [postgresql driver](https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar)
 
+<details>
+  <summary>docker explicado en 1 foto</summary>
+  
+  ![image](https://github.com/user-attachments/assets/0ec94088-e3b1-4b22-91c5-c63d63919473)
+  
+</details>
+
 ---
 
 # Tabla de Contenidos

@@ -60,9 +60,9 @@
   - [Ejercicio volumenes](#ejercicio-volumenes)
 - [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
+- [Pusheo a repo](#pusheo-a-repo)
 - [Docker in docker](#docker-in-docker)
   - [Portainer](#portainer)
-- [Pusheo a repo](#pusheo-a-repo)
 - [Utiles](#utiles)
   - [Container IDE](#container-ide)
   - [Análisis de vulnerabilidades](#análisis-de-vulnerabilidades)
@@ -668,7 +668,6 @@ services:
 
 [graphiql](http://localhost:8080/graphql-2-jpa/graphiql?path=/graphql-2-jpa/graphql)
 
-
 # Logs de un container detachado
 
 Inicio contianer detachado
@@ -695,6 +694,49 @@ docker logs --follow --tail 1 my-python-container
 Detener el container
 ```cmd
 docker container stop my-python-container
+```
+
+# Pusheo a repo
+[docker registry image](https://hub.docker.com/_/registry)
+
+Iniciar container registry
+```cmd
+docker run --rm -d -p 5000:5000 --name registry registry
+```
+
+Creemos una nueva tag en nuestro local y la pusheamos al registry
+
+```cmd
+docker tag graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:from-src
+docker push localhost:5000/graphql-2-jpa:from-src
+```
+
+[Info de la imagen en registry](http://localhost:5000/v2/graphql-2-jpa/tags/list)
+
+Creemos otra tag más para la misma imagen en nuestro local y la pusheamos al registry
+```cmd
+docker tag graphql-2-jpa:psql localhost:5000/graphql-2-jpa:psql
+docker push localhost:5000/graphql-2-jpa:psql
+```
+
+Borro ambas tags de mi local (y todas las imagenes que puedan compartir las mismas capas)
+```cmd
+docker image rm eclipse-temurin:21.0.3_9-jre-jammy eclipse-temurin:21.0.3_9-jdk-jammy graphql-2-jpa:psql localhost:5000/graphql-2-jpa:from-src graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:psql
+```
+
+Las vuelvo a descargar de el registry
+```cmd
+docker pull localhost:5000/graphql-2-jpa:from-src
+docker pull localhost:5000/graphql-2-jpa:psql
+```
+
+```cmd
+docker image ls
+```
+
+Detener container registry
+```cmd
+docker container registry stop
 ```
 
 # Docker in docker
@@ -739,49 +781,6 @@ podman-machine-default-root  ssh://root@127.0.0.1:59462/run/podman/podman.sock  
 
 ```cmd
 docker run --rm -p 9000:9000 -v /run/podman/podman.sock:/var/run/docker.sock portainer/portainer-ce:latest
-```
-
-# Pusheo a repo
-[docker registry image](https://hub.docker.com/_/registry)
-
-Iniciar container registry
-```cmd
-docker run --rm -d -p 5000:5000 --name registry registry
-```
-
-Creemos una nueva tag en nuestro local y la pusheamos al registry
-
-```cmd
-docker tag graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:from-src
-docker push localhost:5000/graphql-2-jpa:from-src
-```
-
-[Info de la imagen en registry](http://localhost:5000/v2/graphql-2-jpa/tags/list)
-
-Creemos otra tag más para la misma imagen en nuestro local y la pusheamos al registry
-```cmd
-docker tag graphql-2-jpa:psql localhost:5000/graphql-2-jpa:psql
-docker push localhost:5000/graphql-2-jpa:psql
-```
-
-Borro ambas tags de mi local (y todas las imagenes que puedan compartir las mismas capas)
-```cmd
-docker image rm eclipse-temurin:21.0.3_9-jre-jammy eclipse-temurin:21.0.3_9-jdk-jammy graphql-2-jpa:psql localhost:5000/graphql-2-jpa:from-src graphql-2-jpa:from-src localhost:5000/graphql-2-jpa:psql
-```
-
-Las vuelvo a descargar de el registry
-```cmd
-docker pull localhost:5000/graphql-2-jpa:from-src
-docker pull localhost:5000/graphql-2-jpa:psql
-```
-
-```cmd
-docker image ls
-```
-
-Detener container registry
-```cmd
-docker container registry stop
 ```
 
 # Utiles

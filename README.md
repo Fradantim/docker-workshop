@@ -56,7 +56,8 @@
 - [Lanzar comandos shell](#lanzar-comandos-shell)
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
-  - [Ejercicio](#ejercicio-1)
+  - [Ejercicio shell](#ejercicio-shell)
+  - [Ejercicio volumenes](#ejercicio-volumenes)
 - [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Docker in docker](#docker-in-docker)
@@ -611,7 +612,22 @@ Detener todo
 docker container stop my-java-container my-python-container
 ```
 
-## Ejercicio
+## Ejercicio shell
+
+Instanciar un container de [Apache Kafka](https://hub.docker.com/r/apache/kafka)
+
+Entrar con una terminal bash al container y crear un tópico y quedarse consumiendo mensajes del mismo:
+```sh
+sh /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic this-is-my-topic-name --create 
+sh /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic this-is-my-topic-name
+```
+
+Entrar con otra terminal bash al container y escribir eventos en el topico previamente creado
+```sh
+sh /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic this-is-my-topic-name
+```
+
+## Ejercicio volumenes
 
 Ya sabiendo montar volumenes, montar archivos, ajustar el entrypoint de un container...
 
@@ -903,6 +919,3 @@ docker image prune -a
 docker volume prune -a
 docker builder prune -a
 ```
-
-
-TODO Ejercicio PHP / NodeJS / Kafka

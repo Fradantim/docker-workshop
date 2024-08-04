@@ -506,6 +506,11 @@ Nota 1: requiere variable de entorno `BROWSER=none`.
 Nota 2: En caso de correr en terminal agregar `-it`. En caso de correr en compose agregarle al container `stdin_open: true`.
 
 
+En caso que todo haya levantado correctamente podrán cargar [localhost 3000](http://localhost:3000) y verán
+![image](https://github.com/user-attachments/assets/52909fd2-d5c8-4604-8a53-659ce94017a1)
+
+En el box de texto podrán agregar nuevas entradas, y borrarlas al hacer click sobre ellas
+
 # Volumenes persistentes
 
 ## Storage volatil

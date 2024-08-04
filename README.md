@@ -48,6 +48,7 @@
   - [Integracion entre containers via host-network](#integracion-entre-containers-via-host-network)
   - [Integracion entre containers via docker-network](#integracion-entre-containers-via-docker-network)
   - [docker-compose](#docker-compose)
+  - [Ejercicio](#ejercicio)
 - [Volumenes persistentes](#volumenes-persistentes)
   - [Storage volatil](#storage-volatil)
   - [Creacion](#creacion)
@@ -55,7 +56,7 @@
 - [Lanzar comandos shell](#lanzar-comandos-shell)
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
-  - [Ejercicio](#ejercicio)
+  - [Ejercicio](#ejercicio-1)
 - [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Docker in docker](#docker-in-docker)
@@ -443,6 +444,67 @@ services:
 ```cmd
 docker compose up
 ```
+
+## Ejercicio
+
+Ya sabiendo integrar containers...
+
+
+```mermaid
+flowchart LR
+subgraph host
+  subgraph docker
+    subgraph network
+      M(mongodb)
+      B(backend) -.->|27017|M
+      F(frontend)
+    end
+    DB> ] -.->|80|B
+    DF> ] -.->|3000|F
+  end
+  HB> ] -.->|8080|DB
+  HF> ] -.->|3000|DF
+end
+N([network]) -.->|8080|HB
+N([network]) -.->|3000|HF
+
+classDef container fill:white,stroke:black;
+class M,F,B container;
+style N fill:white,stroke:black;
+
+style host fill:#e8ebd3,stroke:black;
+style docker fill:#d3e8eb,stroke:black;
+style network fill:#d3d3eb,stroke:black;
+```
+
+**[Imagen mongodb](https://hub.docker.com/_/mongo)**
+
+Por defecto expone en puerto 27017
+
+Variables de entorno utiles:
+- MONGO_INITDB_ROOT_USERNAME
+- MONGO_INITDB_ROOT_PASSWORD
+
+**backend**
+
+Definido en fe.reactjs-be.express-db.mongo/backend-express
+
+Por defecto expone en puerto 80
+
+Variables de entorno utiles:
+- MONGODB_USERNAME
+- MONGODB_PASSWORD
+
+**frontend**
+
+Definido en fe.reactjs-be.express-db.mongo/frontend-reajctjs
+
+Por defecto expone en puerto 3000
+
+Nota 1: requiere variable de entorno `BROWSER=none`.
+
+Nota 2: En caso de correr en terminal agregar `-it`. En caso de correr en compose agregarle al container `stdin_open: true`.
+
 
 # Volumenes persistentes
 

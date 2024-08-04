@@ -43,26 +43,20 @@
 - [Ejercicios](#ejercicios)
   - [Instanciar una imagen de nyancat en la terminal](#instanciar-una-imagen-de-nyancat-en-la-terminal)
   - [Instanciar una imagen de Doom '93](#instanciar-una-imagen-de-doom-93)
+- [Imagenes de Imagenes de Imagenes - Capas](#imagenes-de-imagenes-de-imagenes---capas)
 - [Integracion de containers](#integracion-de-containers)
-  - [Crear una red](#crear-una-red)
-  - [Instanciar BBDD PostgreSQL](#instanciar-bbdd-postgresql)
-  - [Instanciar adminer](#instanciar-adminer)
-  - [Instanciar app con driver postgresql](#instanciar-app-con-driver-postgresql)
-    - [Imagen sobrecargada](#imagen-sobrecargada)
-    - [Instanciar container de imagen sobrecargada](#instanciar-container-de-imagen-sobrecargada)
-    - [Capas de imagenes](#capas-de-imagenes)
-  - [Diagrama](#diagrama)
-  - [Apagar containers y borrar red](#apagar-containers-y-borrar-red)
+  - [Integracion entre containers via host-network](#integracion-entre-containers-via-host-network)
+  - [Integracion entre containers via docker-network](#integracion-entre-containers-via-docker-network)
   - [docker-compose](#docker-compose)
+- [Volumenes persistentes](#volumenes-persistentes)
+  - [Storage volatil](#storage-volatil)
+  - [Creacion](#creacion)
 - [Montar recursos](#montar-recursos)
 - [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
 - [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Lanzar comandos shell](#lanzar-comandos-shell)
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
-- [Volumenes persistentes](#volumenes-persistentes)
-  - [Storage volatil](#storage-volatil)
-  - [Creacion](#creacion)
 - [Docker in docker](#docker-in-docker)
   - [Portainer](#portainer)
 - [Pusheo a repo](#pusheo-a-repo)
@@ -183,31 +177,8 @@ docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 
 ---
 
-# Integracion de containers
+# Imagenes de Imagenes de Imagenes - Capas
 
-## Crear una red
-```cmd
-docker network create my-network
-```
-## Instanciar BBDD PostgreSQL
-> info: https://hub.docker.com/_/postgres
-```cmd
-docker run --rm --network my-network --name my-postgresql-container -d -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:14.1-alpine
-```
-## Instanciar adminer
-> info: https://hub.docker.com/_/adminer
-```cmd
-docker run --rm --network my-network -d -p 8081:8080 adminer:standalone
-```
-[adminer-frontend](http://localhost:8081)
-- server: my-postgresql-container
-- username: postgres
-- password: postgres
-- database: postgres
-
-## Instanciar app con driver postgresql
-
-### Imagen sobrecargada
 Creo `Dockerfile-psql`
 
 ```Dockerfile
@@ -223,12 +194,6 @@ ENTRYPOINT ["java","-cp","graphql-2-jpa.jar:postgresql-42.7.3.jar", "org.springf
 docker build -f Dockerfile-psql -t graphql-2-jpa:psql .
 ```
 
-### Instanciar container de imagen sobrecargada
-```cmd
-docker run --rm --network my-network -d -p 8080:8080 graphql-2-jpa:psql --spring.datasource.url=jdbc:postgresql://my-postgresql-container:5432/postgres --spring.datasource.username=postgres --spring.datasource.password=postgres
-```
-
-### Capas de imagenes
 eclipse-temurin:21.0.3_9-jre-jammy -> graphql-2-jpa:from-src -> graphql-2-jpa:psql
 
 ```cmd
@@ -237,50 +202,205 @@ docker history graphql-2-jpa:psql
 
 <table><colgroup width="85"></colgroup><colgroup width="382"></colgroup><colgroup width="85"></colgroup><colgroup width="382"></colgroup><tbody><tr><td></td><td><strong>IMAGEN</strong></td><td><strong>graphql-2-jpa:psql</strong></td><td></td><td></td></tr><tr><td>18</td><td>0B</td><td>ENTRYPOINT ["java" "-cp" "graphql-2-jpa.jar:…</td><td></td><td></td></tr><tr><td>17</td><td>1.09MB</td><td>ADD https://repo1.maven.org/maven2/org/postg…</td><td></td><td></td></tr><tr><td></td><td><strong>IMAGEN</strong></td><td><strong>graphql-2-jpa:from-src</strong></td><td></td><td></td></tr><tr><td>16</td><td>0B</td><td>ENTRYPOINT ["java" "-jar" "graphql-2-jpa.jar"]</td><td></td><td></td></tr><tr><td>15</td><td>53MB</td><td>COPY target/*.jar graphql-2-jpa.jar # buildkit</td><td></td><td></td></tr><tr><td></td><td><strong>IMAGEN</strong></td><td><strong><a href="https://hub.docker.com/layers/library/eclipse-temurin/21.0.3_9-jre-jammy/images/sha256-3186dd88a59659929855a6bb785b0528c812eb0b03d97fd6e2221526547ed322?context=explore">eclipse-temurin:21.0.3_9-jre-jammy</a></strong></td><td><strong>IMAGEN</strong></td><td><strong><a href="https://hub.docker.com/layers/library/eclipse-temurin/21.0.3_9-jdk-jammy/images/sha256-7291a4337ec7942c77490d4e44db3ec6d46cbef038b76108cec3949c0c06e550?context=explore">eclipse-temurin:21.0.3_9-jdk-jammy</a></strong></td></tr><tr><td>15</td><td></td><td></td><td>0B</td><td>CMD ["jshell"]</td></tr><tr><td>14</td><td>0B</td><td>ENTRYPOINT ["/__cacert_entrypoint.sh"]</td><td>0B</td><td>ENTRYPOINT ["/__cacert_entrypoint.sh"]</td></tr><tr><td>13</td><td>1.18kB</td><td>COPY entrypoint.sh /__cacert_entrypoint.sh #…</td><td>1.18kB</td><td>COPY entrypoint.sh /__cacert_entrypoint.sh #…</td></tr><tr><td>12</td><td>0B</td><td>RUN /bin/sh -c set -eux; echo "Verifying…</td><td>0B</td><td>RUN /bin/sh -c set -eux; echo "Verifying…</td></tr><tr><td>11</td><td>165MB</td><td>RUN /bin/sh -c set -eux; ARCH="$(dpkg --…</td><td>308MB</td><td>RUN /bin/sh -c set -eux; ARCH="$(dpkg --…</td></tr><tr><td>10</td><td>0B</td><td>ENV JAVA_VERSION=jdk-21.0.3+9</td><td>0B</td><td>ENV JAVA_VERSION=jdk-21.0.3+9</td></tr><tr><td>9</td><td>36.1MB</td><td>RUN /bin/sh -c set -eux; apt-get update;…</td><td>50MB</td><td>RUN /bin/sh -c set -eux; apt-get update;…</td></tr><tr><td>8</td><td>0B</td><td colspan="3">ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_AL…</td></tr><tr><td>7</td><td>0B</td><td colspan="3">ENV PATH=/opt/java/openjdk/bin:/usr/local/sb…</td></tr><tr><td>6</td><td>0B</td><td colspan="3">ENV JAVA_HOME=/opt/java/openjdk</td></tr><tr><td>5</td><td>0B</td><td colspan="3">/bin/sh -c #(nop) CMD ["/bin/bash"]</td></tr><tr><td>4</td><td>77.9MB</td><td colspan="3">/bin/sh -c #(nop) ADD file:89847d76d242dea90…</td></tr><tr><td>3</td><td>0B</td><td colspan="3">/bin/sh -c #(nop) LABEL org.opencontainers.…</td></tr><tr><td>2</td><td>0B</td><td colspan="3">/bin/sh -c #(nop) LABEL org.opencontainers.…</td></tr><tr><td>1</td><td>0B</td><td colspan="3">/bin/sh -c #(nop) ARG LAUNCHPAD_BUILD_ARCH</td></tr><tr><td>0</td><td>0B</td><td colspan="3">/bin/sh -c #(nop) ARG RELEASE</td></tr></tbody></table>
 
-## Diagrama
-```mermaid
-  flowchart LR
-    subgraph host
-      subgraph docker
-        subgraph my-network
-          B(postgresql)
-          A(adminer) -.->|5432|B
-          J(java-app) -.->|5432|B
-        end
-        HB( ) -.->|5432|B 
-        HA( ) -.->|8080|A
-        HJ( ) -.->|8080|J
-      end
-    end
-    N([network]) -.->|5432|HB
-    N([network]) -.->|8081|HA
-    N([network]) -.->|8080|HJ
+# Integracion de containers
 
-  classDef container fill:white,stroke:black;
-  class A,J,B container;
-  style N fill:white,stroke:black;
+## Integracion entre containers via host-network
 
-  style host fill:#e8ebd3,stroke:black;
-  style docker fill:#d3e8eb,stroke:black;
-  style my-network fill:#d3d3eb,stroke:black;
+**Instancio bbdd postgresql**
+> info: https://hub.docker.com/_/postgres
+```cmd
+docker run -d --rm --name my-postgresql-container --net=host -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:14.1-alpine
 ```
 
-## Apagar containers y borrar red
+**Instancio mi app que se conecta a la bbdd**
+```cmd
+docker run -d --rm --name my-app --net=host graphql-2-jpa:psql --spring.datasource.url=jdbc:postgresql://localhost:5432/postgres --spring.datasource.username=postgres --spring.datasource.password=postgres
+```
+
+**Instancio adminer que se conecta a la bbdd**
+> info: https://hub.docker.com/_/adminer
+```cmd
+docker run -d --rm --name adminer --net=host adminer:standalone php -S [::]:8081 -t /var/www/html
+```
+
+[adminer](http://localhost:8081)
+
+- server: localhost
+- username: postgres
+- password: postgres
+- database: postgres
+
+```mermaid
+flowchart LR
+subgraph host
+    subgraph docker
+    B(postgresql)
+    A(adminer)
+    J(java-app)
+
+    DB> ] -.->|5432|B 
+    DA> ] -.->|8081|A
+    DJ> ] -.->|8080|J
+
+    end
+    HB> ] -.->|5432|DB
+    HA> ] -.->|8081|DA
+    HJ> ] -.->|8080|DJ
+end
+A -.->|5432|HB
+J -.->|5432|HB
+
+N([network]) -.->|5432|HB
+N([network]) -.->|8081|HA
+N([network]) -.->|8080|HJ
+
+classDef container fill:white,stroke:black;
+class A,J,B container;
+style N fill:white,stroke:black;
+
+style host fill:#e8ebd3,stroke:black;
+style docker fill:#d3e8eb,stroke:black;
+```
+
+<details>
+<summary>Lo que no se ve</summary>
+
+```mermaid
+flowchart LR
+subgraph host
+  subgraph docker
+    B(postgresql)
+    A(adminer)
+    J(java-app)
+
+    DB> ] -.->|5432|B 
+    DA> ] -.->|8081|A
+    DJ> ] -.->|8080|J
+
+    DX> ] -.->|????|B
+    DX> ] -.->|????|A
+    DX> ] -.->|????|J
+  end
+  
+  HB> ] -.->|5432|DB
+  HA> ] -.->|8081|DA
+  HJ> ] -.->|8080|DJ
+  HX> ] -.->|????|DX
+end
+A -.->|5432|HB
+J -.->|5432|HB
+
+N([network]) -.->|5432|HB
+N([network]) -.->|8081|HA
+N([network]) -.->|8080|HJ
+N([network]) -.->|????|HX
+
+classDef container fill:white,stroke:black;
+class A,J,B container;
+style N fill:white,stroke:black;
+
+style host fill:#e8ebd3,stroke:black;
+style docker fill:#d3e8eb,stroke:black;
+
+classDef danger fill:red,stroke:none;
+class DX,HX danger;
+linkStyle 3,4,5,9,15 stroke:red;
+```
+
+</details>
+
+**Detener todo**
 ```cmd
 docker container ls
 ```
+
 ```
-CONTAINER ID   IMAGE                  COMMAND                  CREATED             STATUS             PORTS                                       NAMES
-f254b48e41d6   graphql-2-jpa:psql     "java -cp app.jar:po…"   1 second ago        Up 1 second        0.0.0.0:8080->8080/tcp, :::8080->8080/tcp   beautiful_bhabha
-a3ac3fdd61ac   postgres:14.1-alpine   "docker-entrypoint.s…"   13 minutes ago      Up 13 minutes      0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   my-postgresql-container
-5c91983a4102   adminer:standalone     "entrypoint.sh php -…"   About an hour ago   Up About an hour   0.0.0.0:8081->8080/tcp, :::8081->8080/tcp   eloquent_cartwright
+CONTAINER ID  IMAGE                                   COMMAND               CREATED         STATUS         PORTS       NAMES
+ffc27ecd0854  docker.io/library/postgres:14.1-alpine  postgres              44 minutes ago  Up 44 minutes              my-postgresql-container
+2dea23aa174c  localhost/graphql-2-jpa:psql            --spring.datasour...  43 minutes ago  Up 43 minutes              my-app
+74352566dc25  docker.io/library/adminer:standalone    php -S [::]:8081 ...  36 minutes ago  Up 36 minutes              adminer
 ```
-Si hubiera omitido `--rm` en el `docker run` podría aplicarlo ahora:
+
 ```cmd
-docker container stop beautiful_bhabha my-postgresql-container eloquent_cartwright
-docker container rm beautiful_bhabha my-postgresql-container eloquent_cartwright
+docker container stop my-app adminer my-postgresql-container
+```
+
+## Integracion entre containers via docker-network
+
+**Instancio mi red privada**
+```
+docker network create my-network
+```
+
+**Instancio bbdd postgresql**
+> info: https://hub.docker.com/_/postgres
+```cmd
+docker run -d --rm --network my-network --name my-postgresql-container -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:14.1-alpine
+```
+
+**Instancio mi app que se conecta a la bbdd**
+```cmd
+docker run -d --rm --network my-network --name my-app -p 8080:8080 graphql-2-jpa:psql --spring.datasource.url=jdbc:postgresql://my-postgresql-container:5432/postgres --spring.datasource.username=postgres --spring.datasource.password=postgres
+```
+
+**Instancio adminer que se conecta a la bbdd**
+> info: https://hub.docker.com/_/adminer
+```cmd
+docker run -d --rm --network my-network --name adminer -p 8081:8080 adminer:standalone
+```
+
+[adminer](http://localhost:8081)
+
+- server: my-postgresql-container
+- username: postgres
+- password: postgres
+- database: postgres
+
+
+**Detener todo**
+```cmd
+docker container ls
+```
+
+```
+CONTAINER ID  IMAGE                                   COMMAND               CREATED         STATUS         PORTS                   NAMES
+c73a5bfe8c26  docker.io/library/postgres:14.1-alpine  postgres              16 seconds ago  Up 16 seconds                          my-postgresql-container
+937c395d3adc  localhost/graphql-2-jpa:psql            --spring.datasour...  12 seconds ago  Up 12 seconds  0.0.0.0:8080->8080/tcp  my-app
+67de36ef7d42  docker.io/library/adminer:standalone    php -S [::]:8080 ...  8 seconds ago   Up 8 seconds   0.0.0.0:8081->8080/tcp  adminer
+```
+
+```cmd
+docker container stop my-app adminer my-postgresql-container
 docker network rm my-network
 ```
+
+```mermaid
+flowchart LR
+subgraph host
+  subgraph docker
+    subgraph my-network
+      B(postgresql)
+      A(adminer) -.->|5432|B
+      J(java-app) -.->|5432|B
+    end
+    DA> ] -.->|8080|A
+    DJ> ] -.->|8080|J
+  end
+  HA> ] -.->|8081|DA
+  HJ> ] -.->|8080|DJ
+end
+N([network]) -.->|8081|HA
+N([network]) -.->|8080|HJ
+
+classDef container fill:white,stroke:black;
+class A,J,B container;
+style N fill:white,stroke:black;
+
+style host fill:#e8ebd3,stroke:black;
+style docker fill:#d3e8eb,stroke:black;
+style my-network fill:#d3d3eb,stroke:black;
+```
+
 
 ## docker-compose
 [podman setting up compose](https://podman-desktop.io/docs/compose/setting-up-compose)
@@ -295,8 +415,6 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 2s
@@ -323,6 +441,53 @@ services:
 docker compose up
 ```
 
+# Volumenes persistentes
+
+## Storage volatil
+```cmd
+docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+mkdir /my-directory
+cd /my-directory/
+echo the file content  > my-file.txt
+ls
+cat my-file.txt 
+exit
+```
+
+Mato container, lo re-creo y busco mis archivos creados
+```cmd
+docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+```
+que pasó?
+
+
+## Creacion
+```cmd
+docker volume create my-volume
+docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+echo the file content  > my-file.txt
+ls
+cat my-file.txt 
+exit
+```
+
+Mato container, lo re-creo y busco mis archivos creados
+```cmd
+docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
+```
+```bash
+cd /my-directory/
+ls my-file.txt 
+cat 
+```
 
 # Montar recursos
 Creemos un archivo `test.py`
@@ -427,54 +592,6 @@ docker exec -it my-python-container ash
 Detener todo
 ```cmd
 docker container stop my-java-container my-python-container
-```
-
-# Volumenes persistentes
-
-## Storage volatil
-```cmd
-docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
-```
-```bash
-mkdir /my-directory
-cd /my-directory/
-echo the file content  > my-file.txt
-ls
-cat my-file.txt 
-exit
-```
-
-Mato container, lo re-creo y busco mis archivos creados
-```cmd
-docker run --rm -it --entrypoint bash eclipse-temurin:21.0.3_9-jre-jammy
-```
-```bash
-cd /my-directory/
-```
-que pasó?
-
-
-## Creacion
-```cmd
-docker volume create my-volume
-docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
-```
-```bash
-cd /my-directory/
-echo the file content  > my-file.txt
-ls
-cat my-file.txt 
-exit
-```
-
-Mato container, lo re-creo y busco mis archivos creados
-```cmd
-docker run --rm -it --entrypoint bash -v my-volume:/my-directory eclipse-temurin:21.0.3_9-jre-jammy
-```
-```bash
-cd /my-directory/
-ls my-file.txt 
-cat 
 ```
 
 # Docker in docker

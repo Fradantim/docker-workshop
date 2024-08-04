@@ -51,12 +51,13 @@
 - [Volumenes persistentes](#volumenes-persistentes)
   - [Storage volatil](#storage-volatil)
   - [Creacion](#creacion)
-- [Montar recursos](#montar-recursos)
-- [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
-- [Logs de un container detachado](#logs-de-un-container-detachado)
+  - [Montar recursos](#montar-recursos)
 - [Lanzar comandos shell](#lanzar-comandos-shell)
   - [En una imagen](#en-una-imagen)
   - [En  un container](#en--un-container)
+  - [Ejercicio](#ejercicio)
+- [Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)](#ejemplo-servlet-container-apache-tomcat-jboss-eap-)
+- [Logs de un container detachado](#logs-de-un-container-detachado)
 - [Docker in docker](#docker-in-docker)
   - [Portainer](#portainer)
 - [Pusheo a repo](#pusheo-a-repo)
@@ -166,6 +167,8 @@ docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 ```
 
 # Ejercicios
+
+Ya sabiendo instanciar containers...
 
 ## Instanciar una imagen de nyancat en la terminal
 
@@ -489,7 +492,7 @@ ls my-file.txt
 cat 
 ```
 
-# Montar recursos
+## Montar recursos
 Creemos un archivo `test.py`
 
 ```python
@@ -512,10 +515,56 @@ docker run --rm -it -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.
 ```
 *En este comando refuerzo -it "interactive" para que la salida de texto a terminal sea instantánea. ¿Cosa rara de la imagen de python en alpine?*
 
+# Lanzar comandos shell
+
+## En una imagen
+```cmd
+docker run --rm -it --entrypoint bash graphql-2-jpa:from-src
+```
+
+## En  un container
+**Java - Debian (bash)**
+```cmd
+docker run -d --rm --name my-java-container graphql-2-jpa:from-src
+```
+```cmd
+docker exec -it my-java-container bash
+```
+
+**Python - Alpine (ash)**
+```cmd
+docker run --rm -it -d --name my-python-container -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
+```
+```cmd
+docker exec -it my-python-container ash
+```
+
+Detener todo
+```cmd
+docker container stop my-java-container my-python-container
+```
+
+## Ejercicio
+
+Ya sabiendo montar volumenes, montar archivos, ajustar el entrypoint de un container...
+
+Instanciar un container A que hace `tail -f` a un archivo que está siendo escrito por otro container B.
+
+Sintáxis
+
+Mostrar en la terminal actualizaciones en caliente a un archivo
+```sh
+tail -f my-file.txt
+```
+
+Escribir al fondo de un archivo
+```sh
+echo new content >> my-file.txt
+```
 
 # Ejemplo servlet container (Apache Tomcat, JBoss EAP, ...)
 
-Descargo el archivo .war (o lo proveo si tengo uno)
+Descargo un archivo .war (o lo proveo si tengo uno)
 ```cmd
 curl -fOsSL  https://github.com/Fradantim/spring-graphql-2-jpa/releases/download/8/graphql-2-jpa-8.war
 ```
@@ -563,35 +612,6 @@ docker logs --follow --tail 1 my-python-container
 Detener el container
 ```cmd
 docker container stop my-python-container
-```
-
-# Lanzar comandos shell
-
-## En una imagen
-```cmd
-docker run --rm -it --entrypoint bash graphql-2-jpa:from-src
-```
-
-## En  un container
-**Java - Debian (bash)**
-```cmd
-docker run -d --rm --name my-java-container graphql-2-jpa:from-src
-```
-```cmd
-docker exec -it my-java-container bash
-```
-
-**Python - Alpine (ash)**
-```cmd
-docker run --rm -it -d --name my-python-container -v .:/app-src python:3.12.4-alpine3.20 python /app-src/test.py
-```
-```cmd
-docker exec -it my-python-container ash
-```
-
-Detener todo
-```cmd
-docker container stop my-java-container my-python-container
 ```
 
 # Docker in docker

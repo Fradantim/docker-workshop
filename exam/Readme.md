@@ -50,6 +50,8 @@ Recommended images to use (non mandatory):
 
 Make sure to include all environmental variables, healthchecks and containers dependencies (initialization order) so all containers start correctly.
 
+Make sure all databases and important directories contents are not lost in case of container removal.
+
 Building and starting all 6 containers at the time may be difficult, a recommendation:
 
 1. Start only the `pictures`, make sure it starts ok (does not end process).

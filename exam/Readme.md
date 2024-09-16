@@ -68,7 +68,7 @@ Building and starting all 6 containers at the time may be difficult, a recommend
    3. Make sure to start `web` only when `pictures`, `sightings` and `cars` are ready to accept new connections. (`web` wont start otherwise)
    4. Make sure they all start ok.
 
-Once all containers are running attach to cars and call the `seed` endpoint to fill the Mongo database.
+Once all containers are running attach to cars and call the `seed` endpoint to [fill the Mongo database](/exam/node_cars#fill-de-database).
 
 On [localhost:8080](http://localhost:8008) you should see a frontend where you can upload images and input car sightings:
 

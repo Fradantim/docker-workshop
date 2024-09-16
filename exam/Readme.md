@@ -58,4 +58,8 @@ Building and starting all 6 containers at the time may be difficult, a recommend
 
 Once all containers are running attach to cars and call the `seed` endpoint to fill the Mongo database.
 
-On [localhost:8080](http://localhost:8008) you should see
+On [localhost:8080](http://localhost:8008) you should see a frontend where you can upload images and input car sightings:
+
+
+![capsula-docker-fe](https://github.com/user-attachments/assets/7a06af03-8d7f-4c1b-9e78-afb128f418f3)
+

@@ -1,6 +1,6 @@
 # docker exam
 
-Create a single `docker-compose.yml` (or list of sequenced commands) to deploy the next solution:
+Create a single `docker-compose.yml` (or list of sequenced commands), `Dockerfile`s and scripts to deploy the next solution:
 
 ```mermaid
 flowchart LR
@@ -35,6 +35,18 @@ style my-network fill:#d3d3eb,stroke:black;
 ```
 
 The nginx configuration and `docker-compose.yml` information is provided, but `postgresql`, `mongo`, the java `sightings` app, the node js `cars` app, and the python `pictures` app must be provided as containers.
+
+How to compile and run each app is defined in their respective directory, but no information on how to build the container image is provided, that is up to you.
+
+Recommended images to use (non mandatory):
+
+- eclipse-temurin:21.0.3_9-jdk-jammy
+- eclipse-temurin:21.0.3_9-jre-jammy
+- mongo:latest
+- postgres:14.1-alpine
+- node:22-bookworm
+- python:3.12.6-bookworm
+
 
 Make sure to include all environmental variables, healthchecks and containers dependencies (initialization order) so all containers start correctly.
 

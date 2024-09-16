@@ -34,3 +34,10 @@ node index.js
 HTTP GET request to /health should return status `200` and body
 
 > Everything is awesome
+
+# Fill de database
+
+If MongoDB is empty you can HTTP GET to `/seed` to fill it
+```sh
+curl http://localhost:3000/seed
+```

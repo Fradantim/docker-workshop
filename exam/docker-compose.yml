@@ -1,0 +1,24 @@
+
+services:
+# TODO implement this containers
+#  postgres:
+#  sightings:
+#  mongo:
+#  cars:
+#  images:
+
+# once sightings, cars and images are OK you can uncomment
+#  web:
+#    image: nginx:1.26-bookworm
+#    volumes:
+#      - ./nginx/html:/usr/share/nginx/html
+#      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+#    ports:
+#    - "8080:80"
+#    depends_on:
+#      sightings:
+#        condition: service_healthy
+#      cars:
+#        condition: service_healthy
+#      images:
+#        condition: service_healthy

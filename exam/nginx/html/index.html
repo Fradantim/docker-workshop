@@ -1,0 +1,104 @@
+<!--        <script src="index.js"> </script> -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="bootstrap.5.3.2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="bootstrap.5.3.2.bundle.min.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="#">Car sightings</a>        
+      </div>
+    </nav>
+
+    <div class="container my-5">
+        <h1>Car sightings</h1>
+        
+        <br>
+
+        <h2>Pictures</h2>
+
+        <div id="pictureCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner" id="pictureCarouselInner">
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#pictureCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#pictureCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+        </div>
+
+        <br>
+
+        <div class="input-group">
+            <form id="addNewPictureForm">
+                <input name="file" type="file" class="form-control" id="addNewPictureFile" aria-describedby="inputGroupFileAddon04" aria-label="Add new picture">
+                <button class="btn btn-outline-secondary" type="button" id="addNewPictureButton" onclick="uploadFile()">Add new picture</button>
+            </form>
+        </div>
+        
+        <hr>
+
+        <h2>Sighting</h2>
+        <table style="width: 100%;">
+            <tbody>
+                <tr>
+                    <td>
+                        <!-- dropdown brand -->
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Brand</label>
+                            <select class="form-select" id="brandInput" onchange="onBrandSelect()">
+                                <option selected value="B">Choose...</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Model</label>
+                            <select class="form-select" id="modelInput">
+                                <option selected value="M">Choose...</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelect01">Picture</label>
+                            <select class="form-select" id="pictureInput">
+                                <option selected value="P">Choose...</option>
+                            </select>
+                        </div>
+                    </td>
+                </td>
+            </tbody>
+        </table>
+        <div class="input-group">
+            <span class="input-group-text">Add some description</span>
+            <textarea class="form-control" aria-label="With textarea" id="descriptionInput"></textarea>
+        </div>
+        <button class="btn btn-outline-primary" type="button" id="addNewSightingButton" onclick="addSighting()">Add sighting</button>
+        <br>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">brand</th>
+                    <th scope="col">model</th>
+                    <th scope="col">picture</th>
+                </tr>
+            </thead>
+            <tbody id="sightingstbody">
+            </tbody>
+        </table>    
+    </body>
+</html>

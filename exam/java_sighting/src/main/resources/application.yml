@@ -1,0 +1,3 @@
+spring:
+  application.name: sightings-app 
+  sql.init.mode: always

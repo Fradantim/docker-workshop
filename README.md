@@ -490,11 +490,11 @@ Variables de entorno utiles:
 
 Definido en fe.reactjs-be.express-db.mongo/backend-express
 
-Por defecto expone en puerto 80
+Por defecto expone en puerto 8080
 
 Variables de entorno utiles:
-- MONGODB_USERNAME
-- MONGODB_PASSWORD
+- MONGODB_CONNECTION_STRING
+  - ej: `mongodb://THE_USERNAME:THE_PASSWORD@THE_HOSTNAME:27017`
 
 **frontend**
 

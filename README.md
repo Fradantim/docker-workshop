@@ -123,7 +123,7 @@ git clone https://github.com/Fradantim/spring-graphql-2-jpa.git --branch=8
 ```
 
 <details>
-<summary>Plan B si no tengo git (mal ahi)</summary>
+<summary>Plan B si no tengo git</summary>
 
 ```cmd
 curl -fOsSL https://github.com/Fradantim/spring-graphql-2-jpa/archive/refs/tags/8.zip
@@ -133,6 +133,8 @@ move spring-graphql-2-jpa-8 spring-graphql-2-jpa
 ```
 
 </details>
+
+**IMPORTANTE**: una vez clonado/descargado el fuente abrir `spring-graphql-2-jpa/mvnw` con un editor de texto (notepad++/vscode/...) y confirmar que tenga saltos de linea linux (LF), si no lo posee ajsutarlo, caso contrario el resto de los ejemplos fallarán.
 
 
 Preparo un archivo `Dockerfile-from-src`

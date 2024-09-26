@@ -90,8 +90,7 @@ mongoose.connect(
     useUnifiedTopology: true,
   },
   (err) => {
-    console.log('USER: ', process.env.MONGODB_USERNAME);
-    console.log('PASS: ', process.env.MONGODB_PASSWORD);
+    console.log('MONGODB CONNECTION STRING: ', process.env.MONGODB_CONNECTION_STRING);
     if (err) {
       console.error('FAILED TO CONNECT TO MONGODB');
       console.error(err);

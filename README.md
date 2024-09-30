@@ -3,9 +3,15 @@
 # Links utiles
 - [docker](https://www.docker.com/)
 - [podman](https://podman.io/)
-  - Si tengo podman y no docker:
+  - Si tengo podman y no docker puedo crear un alias:
+
+    cmd:
     ```
     doskey docker=podman $*
+    ```
+    powershell:
+    ```
+    sal docker podman
     ```
 - [spring-graphql-2-jpa](https://github.com/Fradantim/spring-graphql-2-jpa)
 - [spring-graphql-2-jpa localhost 8080](http://localhost:8080/graphiql)

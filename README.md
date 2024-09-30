@@ -167,14 +167,19 @@ docker build -f Dockerfile-from-src -t graphql-2-jpa:from-src .
 ```
 
 # Ejecutar imagen docker
+
 ```cmd
-docker run --rm graphql-2-jpa:from-src
+docker run --rm graphql-2-jpa:from-compilated-src
 ```
+
+Notese que `graphql-2-jpa:from-compilated-src` es una imagen y tag creados en el punto anterior, si el paso previo no se realizó o fallo este punto también fallará.
 
 ## Exposición de puerto
 ```cmd
 docker run --rm -p 8080:8080 graphql-2-jpa:from-src
 ```
+
+Notese que `graphql-2-jpa:from-src` es una imagen y tag creados en el punto anterior, si el paso previo no se realizó o fallo este punto también fallará.
 
 # Ejercicios
 
@@ -202,6 +207,8 @@ ADD https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-4
 # cuando inicie el container de esta imagen lanzar el siguiente comando
 ENTRYPOINT ["java","-cp","graphql-2-jpa.jar:postgresql-42.7.3.jar", "org.springframework.boot.loader.launch.PropertiesLauncher"]
 ```
+
+Notese que `graphql-2-jpa:from-src` es una imagen y tag creados en el punto anterior, si el paso previo no se realizó o fallo este punto también fallará.
 
 ```cmd
 docker build -f Dockerfile-psql -t graphql-2-jpa:psql .

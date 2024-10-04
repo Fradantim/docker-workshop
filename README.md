@@ -475,7 +475,7 @@ subgraph host
       B(backend) -.->|27017|M
       F(frontend)
     end
-    DB> ] -.->|80|B
+    DB> ] -.->|8080|B
     DF> ] -.->|3000|F
   end
   HB> ] -.->|8080|DB

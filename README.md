@@ -140,8 +140,15 @@ move spring-graphql-2-jpa-8 spring-graphql-2-jpa
 
 </details>
 
-**IMPORTANTE**: una vez clonado/descargado el fuente abrir `spring-graphql-2-jpa/mvnw` con un editor de texto (notepad++/vscode/...) y confirmar que tenga saltos de linea linux (LF), si no lo posee ajsutarlo, caso contrario el resto de los ejemplos fallarán.
+> [!CAUTION]
+> El archivo `spring-graphql-2-jpa/mvnw` **debe** poseer saltos de linea tipo linux (LF). Si tengo git incorrectamente configurado puede grabarlo en formato windows (CRLF).
 
+Ajuste saltos de linea:
+```cmd
+powershell -command "(Get-Content spring-graphql-2-jpa\mvnw -Raw) -replace \"`r\", \"\"" > mvnwlf
+del /q spring-graphql-2-jpa\mvnw
+move mvnwlf spring-graphql-2-jpa\mvnw
+```
 
 Preparo un archivo `Dockerfile-from-src`
 ```Dockerfile

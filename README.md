@@ -723,8 +723,20 @@ docker container stop my-python-container
 
 Iniciar container registry
 ```cmd
-docker run --rm -d -p 5000:5000 --name registry registry
+docker run --rm -d -p 5000:5000 --name registry registry:2.8
 ```
+
+> [!CAUTION]
+> Para que **docker** pueda trabajar con este registry que no utiliza TLS debemos configurarlo como inseguro en el `daemon.json` presente en:
+> - Linux, regular setup `/etc/docker/daemon.json`
+> - Linux, rootless mode `~/.config/docker/daemon.json`
+> - Windows `C:\ProgramData\docker\config\daemon.json`
+> - Windows only cli `%USERPROFILE%\.docker\daemon.json`
+> ```json
+> { "insecure-registries": [ "localhost:5000" ] }
+> ```
+> 
+> Para que **podman** pueda trabajar con este registry que no utiliza TLS debemos utilizar el argumento `--tls-verify=false` en los pull y push
 
 Creemos una nueva tag en nuestro local y la pusheamos al registry
 
